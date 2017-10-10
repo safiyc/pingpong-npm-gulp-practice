@@ -13,6 +13,17 @@ var source = require('vinyl-source-stream');
 var uglify = require('gulp-uglify');
 // this is a 'linter' tool, used to analyzes code and warns about parts that dont follow stylistic conventions, or could cause possible bugs:
 var jshint = require('gulp-jshint');
+var lib = require('bower-files')({
+  'overrides':{
+    'bootstrap':{
+      'main':[
+        'less/bootstrap.less',
+        'dist/css/bootstrap.css',
+        'dist/js/bootstrap.js'
+      ]
+    }
+  }
+});
 
 var buildProduction = utilities.env.production;
 
@@ -82,6 +93,7 @@ gulp.task('build', function() {
   } else {
     gulp.start('jsBrowserify');
   }
+  gulp.start('bower');
 });
 
 // in terminal - run 'gulp build' or 'gulp build --production', and different tasks will run ('production' runds 'minisfyScripts, along with other tasks')
@@ -91,3 +103,18 @@ gulp.task('jshint', function(){
     .pipe(jshint())
     .pipe(jshint.reporter('default'));
 });
+
+gulp.task('bowerJS', function() {
+  return gulp.src(lib.ext('js').files)
+    .pipe(concat('vendor.min.js'))
+    .pipe(uglify())
+    .pipe(gulp.dest('./build/js'));
+});
+
+gulp.task('bowerCSS', function() {
+  return gulp.src(lib.ext('css').files)
+    .pipe(concat('vendor.css'))
+    .pipe(gulp.dest('./build/css'));
+});
+
+gulp.task('bower', ['bowerJS', 'bowerCSS']);
